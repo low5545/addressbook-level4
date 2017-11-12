@@ -1,0 +1,214 @@
+= Low Weng Fei - Project Portfolio
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+:imagesDir: ../images
+:stylesDir: ../stylesheets
+
+This document collates my skills and experience in Software Engineering related work. The contents below are ordered by
+projects.
+
+== Project: BoNUS
+BoNUS is a desktop personal organizer application targeted at National University of Singapore (NUS) students, with
+Contacts, Events and Calendar being the main focus of this application. While users interact with it mainly through a
+Command Line Interface (CLI), BoNUS also provides a simple Graphical User Interface (GUI) for a better User Experience (UX).
+
+This project is the result of a semester-long Software Engineering module, https://nus-cs2103.github.io/website/[CS2103T],
+in NUS. The backend of BoNUS is written primarily in Java, while JavaFX is used for the frontend design. Being built
+based on https://github.com/se-edu/addressbook-level4[Address Book (Level 4)], an initiative from the
+https://se-edu.github.io/[SE-EDU team], the current codebase has expanded to around 10 kLoC.
+
+*Code contributed*: [https://github.com/CS2103AUG2017-T09-B3/main/blob/master/collated/main/low5545.md[Functional code]] [https://github.com/CS2103AUG2017-T09-B3/main/blob/master/collated/test/low5545.md[Test code]]
+
+=== Enhancement Added: Import/Export
+
+==== External behavior
+
+---
+
+===== Importing data from `.xml` format : `(i)import`
+
+This command imports the data in an external XML file, including data from all three components: *Contacts*, *Events*
+and *Calendar*, into the current address book of *BoNUS*. +
+
+Format: `(i)import FILEPATH`
+
+[NOTE]
+====
+The default file format is `.xml`. If you do not explicitly provide any parameters, the application will treat the file
+given by the `FILEPATH` as an `.xml` file. It is unnecessary to explicitly state `import --xml FILEPATH`, although you
+are also allowed to do so.
+====
+
+****
+* This command imports data from the location and file name you specified through `FILEPATH`.
+* You must end the `FILEPATH` with an extension of `.xml`.
+* You must not leave the file name in `FILEPATH` empty.
+* You must not name the file in `FILEPATH` with any prohibited characters `?!%*+:|"<>`.
+* If you provide a relative path, the data will be imported from a location relative to the *BoNUS* installation directory.
+* Persons and events that exist in *BoNUS* and the specified file will not be imported.
+* Data in the specified XML file must be in the format as recognized by *BoNUS*.
+****
+
+Guided examples:
+
+. If you are a `Windows` user,
+.. Suppose you want to import data from `C:\Users\John Doe\Documents\bonus.xml`
+.. Enter `import C:\Users\John Doe\Documents\bonus.xml` into the `Command Box`
+.. The data will then be imported in *BoNUS*
+. If you are a `macOS` or `Linux` user,
+.. Suppose you want to import data from `/Users/John Doe/Documents/bonus.xml`
+.. Enter `import /Users/John Doe/Documents/bonus.xml` into the `Command Box`
+.. The data will then be imported in *BoNUS*
+
+[NOTE]
+====
+If you are a `Windows` user, use `\` as the name-separator in your `FILEPATH`. +
+If you are a `macOS` or `Linux` user, use `/` instead.
+====
+
+===== Exporting data to `.xml` format : `(p)export`
+
+This command exports the current data in the application, including data from all three components: *Contacts*, *Events*
+and *Calendar*, to an external location. +
+
+Format: `(p)export FILEPATH`
+
+****
+* This command exports data to the location and file name specified by `FILEPATH`.
+* You must end the `FILEPATH` with an extension of `.xml`.
+* You must not leave the file name in `FILEPATH` empty.
+* You must not name the file and any non-existent folders in `FILEPATH` with any prohibited characters `?!%*+:|"<>`.
+* If you provide a relative path, the data will be imported from a location relative to the *BoNUS* installation directory.
+* Existing data file at `FILEPATH` will be overwritten.
+* Parent directories, if specified in `FILEPATH`, will be created if they do not exist.
+****
+
+Guided examples:
+
+. If you are a `Windows` user,
+.. Suppose you want to export data from `C:\Users\John Doe\Documents\bonus.xml`
+.. Enter `export C:\Users\John Doe\Documents\bonus.xml` into the `Command Box`
+.. The data will then be exported in *BoNUS*
+. If you are a `macOS` or `Linux` user,
+.. Suppose you want to export data from `/Users/John Doe/Documents/bonus.xml`
+.. Enter `export /Users/John Doe/Documents/bonus.xml` into the `Command Box`
+.. The data will then be exported in *BoNUS*
+
+[NOTE]
+====
+If you are a `Windows` user, use `\` as the name-separator in your `FILEPATH`. +
+If you are a `macOS` or `Linux` user, use `/` instead.
+====
+
+---
+
+==== Justification
+
+The support for import and export capabilities is essential to increase the user adoption of BoNUS, as these features
+allow users to incorporate BoNUS more seamlessly in their daily routines. Simply by providing the desired file location,
+users are able to import data into BoNUS, and export all data stored in the application to somewhere safe.
+
+As for the latest BoNUS v1.5 official release, users are constrained to import data from, or export data to a
+BoNUS-recognized XML file. Nevertheless, more file formats will be supported in future releases to truly unleash the
+full potential of the application.
+
+==== Implementation
+
+---
+
+===== Import & Export mechanism
+
+In order to open up more possibilities to **BoNUS**, we have introduced the `import` and `export` commands. We are using
+`ImportXmlCommand` and `ExportCommand` to support importing and exporting of address book data through XML files.
+
+In the following sections, we will focus on how these commands depend on the `Storage` component to retrieve external
+data, as well as the file path validation mechanism adopted on a high-level basis.
+
+====== External Data Access
+
+In order to achieve their tasks, both `import` and `export` commands natively require access to the external
+environment, unlike other commands. Hence, these commands are designed to depend directly on the `Storage` component.
+
+The dependence of `Storage` in `import` and `export` is achieved through the `Command.setStorage(Storage)` method. This
+method mimics the existing `Command.setData(Model, CommandHistory, UndoRedoStack)` method, where only commands that make
+use of the relevant data will override this method to gain access to the dependencies.
+
+The following shows the implementation of `Command.setStorage(Storage)`, which is not overridden commands other than
+`ImportXmlCommand` and `ExportCommand`:
+
+[source,java]
+----
+public void setStorage(Storage storage) {
+    // intentionally left empty
+}
+----
+
+In `ImportXmlCommand` and `ExportCommand`, the overridden method is implemented in this way:
+
+[source,java]
+----
+@Override
+public void setStorage(Storage storage) {
+    this.storage = storage;
+}
+----
+
+Through this implementation, commands that depend directly on the `Storage` component (ie. `import` and `export`) are
+able to gain full access to `Storage`, while commands that do not rely on `Storage` remain weakly coupled to it. The
+following class diagram (Figure 1) of the `Logic` component reflects the overall implementation on an architectural-level
+point of view:
+
+image::LogicClassDiagramStorageEmphasis.png[width="800"]
+_Figure 1 : Structure of the Logic Component_
+
+====== File Path Validation
+
+File paths, as required by `import` and `export` commands, are validated during the execution of the corresponding
+command. The following sequence diagram (Figure 2) shows an example of how file path validation is performed prior
+exporting the address book data:
+
+image::ExportCommandSequenceDiagram.png[width="800"]
+_Figure 2 : Sequence Diagram for Export Command_
+
+To facilitate better handling of invalid file paths and to provide appropriate feedback to the user, several exception
+classes, all of which are derived from the `InvalidFilePathException` class, have been implemented. Figure 3 shows
+the inheritance diagram of the above-mentioned exception classes:
+
+image::CommonsComponentExceptionClassDiagram.png[width="800"]
+_Figure 3 : Structure of Exception Classes related to File Path Validation_
+
+With that, we are able to ensure that data would be exported to or imported from a truly valid file path as specified by
+the user, while being able to inform users on the mistakes that they have made.
+
+====== Design Considerations
+
+**Aspect:** Implementation of `Storage` dependency for `ImportXmlCommand` and `ExportCommand` +
+**Alternative 1 (current choice):** Add a new `setStorage(Storage)` method in `Command` +
+**Pros:** Provides direct access to `Storage` for commands that only requires it. +
+**Cons:** There is an inherent dependency on `Storage` for all commands, although the coupling is weak. +
+**Alternative 2:** Raise a `BaseEvent` in the `EventsCenter` through `Model` +
+**Pros:** Completely decouples `Command` from `Storage`. +
+**Cons:** The need for access to `Storage` is not a side-effect as with other commands that mutate the address book +
+(eg. `add`, `delete` etc.). The dependency of `Storage` is part of their native behaviour.
+
+---
+
+**Aspect:** Location for Implementation of File Path Validation +
+**Alternative 1 (current choice):** In `Storage` +
+**Pros:** Validation is not just done for user input file paths (ie. via `import` and `export` commands), but also for the address book file path as defined in the user's preferences (ie. `preferences.json`). +
+**Cons:** Validation is performed after every execution of an `UndoableCommand` due to the saving of the address book. +
+**Alternative 2:** In `CommandParser` +
+**Pros:** Validation will not be done after every execution of an `UndoableCommand` unnecessarily. +
+**Cons:** File path validation may also be required for other purposes.
+
+---
+
+=== Other contributions
+
+* Added an informative feedback message to notify users what command they have undone or redone
+(Pull request https://github.com/CS2103AUG2017-T09-B3/main/pull/61[#61])
+* Introduced the support of command aliases, or shorthand-equivalent commands
+(Pull request https://github.com/CS2103AUG2017-T09-B3/main/pull/38[#38])
+* Assisted Project AcquaiNote in bug reporting and feature suggestions
+(Issues https://github.com/CS2103AUG2017-T10-B1/main/issues/74[#74], https://github.com/CS2103AUG2017-T10-B1/main/issues/75[#75],
+https://github.com/CS2103AUG2017-T10-B1/main/issues/76[#76], Pull requests https://github.com/CS2103AUG2017-T10-B1/main/pull/77[#77],
+https://github.com/CS2103AUG2017-T10-B1/main/pull/79[#79])
