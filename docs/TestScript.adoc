@@ -3,8 +3,8 @@
 :toc-title:
 :toc-placement: preamble
 :sectnums:
-:imagesDir: ../../../../docs/images
-:stylesDir: ../../../../docs/stylesheets
+:imagesDir: images
+:stylesDir: stylesheets
 :experimental:
 ifdef::env-github[]
 :tip-caption: :bulb:
