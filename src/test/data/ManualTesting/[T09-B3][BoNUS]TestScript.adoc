@@ -260,9 +260,9 @@ _Command:_ +
 _Result:_ +
 `Listed all events`
 
-. Let's try to edit an event from index 6 of Event list.
+. Let's try to edit an event from index 6 of Event list. +
 _Command:_ +
-editE 6 n/Movie Date with Bro +
+`editE 6 n/Movie Date with Bro` +
 _Result:_ +
 `Edited Event:  Event: Movie Date with Bro |  Date/Time: 22 Nov, 2017 22:00 |  Address: Golden Village Yishun` +
 
